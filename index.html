@@ -87,6 +87,14 @@
                 '<a class="subfoot" href="https://creativecommons.org/licenses/by/4.0/" rel="license">' +
                 'Creative Commons Attribution 4.0 License</a>.</p>',
             localBiblio: {
+                "Moab": {
+                    title: "The Moab Design for Digital Object Versioning",
+                    href: "https://journal.code4lib.org/articles/8482",
+                    authors: [
+                        "Richard Anderson"
+                    ],
+                    date: "15 July 2013"
+                },
                 "NAMASTE": {
                     title: "Directory Description with Namaste Tags",
                     href: "https://confluence.ucop.edu/download/attachments/14254149/NamasteSpec.pdf",
@@ -402,7 +410,7 @@
                 key of <code>versions</code> within the inventory, and it MUST be an array.
             </p>
             <p>
-                Within the <code>versions</code> array is a list of JSON objects of type <code>Version</code>.
+                The <code>versions</code> array MUST be a list of one or more JSON objects of type <code>Version</code>.
             </p>
             <section id="version">
                 <h2>Version</h2>
@@ -463,13 +471,13 @@
                             </p>
                             <p>
                                 Notably, the version state can be used to provide de-duplication of content within
-                                the object, by mapping multiple <a>logical file paths</a> to the same content digest
-                                in the manifest. Implementers may choose to use this functionality on an object-by-
-                                object basis. For example, they may choose to implement renaming (that is, changes
-                                in file <i>name</i>, but not file <i>content</i>) by pointing a new logical file path
-                                to the digest for content that was added in a previous version. Implementers may also,
-                                however, choose to accession a new file with a new name and same content as a new
-                                version.
+                                the OCFL Object, by mapping multiple <a>logical file paths</a> to the same content 
+                                digestin the manifest. Implementers may choose to use this functionality on a 
+                                case-by-case basis. For example, they may choose to implement renaming (that is, 
+                                changes in file <i>name</i>, but not file <i>content</i>) by pointing a new logical 
+                                file path to the digest for content that was added in a previous version. Implementers
+                                may also, however, choose to accession a new file with a new name and same content as 
+                                a new version.
                             </p>
                         </blockquote>
                         <p>An example state object is shown below.</p>
@@ -562,20 +570,60 @@ TBD
 
     <section id="root-conformance-declaration">
         <h2>Root Conformance Declaration</h2>
+        <p>
             The OCFL version declaration MUST be formatted according to the [[!NAMASTE]] specification. It MUST be an
             empty file in the base directory of the <a>OCFL Storage Root</a> giving the OCFL version in the filename.
             The filename MUST be constructed with a leading zero-equals (<code>0=</code>) string, the string
             <code>ocfl_</code>, followed by the OCFL specification version number. For example <code>0=ocfl_1.0</code>
             for version 1.0 of this specification.
+        </p>
     </section>
 
     <section id="root-structure">
         <h2>Root Structure</h2>
+        <p>
+          An <a>OCFL Storage Root</a> is the base directory of an OCFL storage layout.
+        </p>
+        <p>
+          An OCFL Storage Root MUST contain a
+          <a href="#root-conformance-declaration">Root Conformance Declaration</a> identifying it as such.
+        </p>
+        <p>
+          <a>OCFL Object</a>s within a given OCFL Storage Root MUST be the same as the OCFL specification
+           version as declared in the <a href="#root-conformance-declaration">Root Conformance Declaration</a>.
+        </p>
+        <p>
+          An OCFL Storage Root SHOULD also contain the OCFL specification in human-readable plain-text format
+          in the root.
+        </p>
+        <p>
+          An OCFL Storage Root MUST NOT contain any files or directories other than those described here.
+        </p>
+        <p>
+          Although implementations may require multiple OCFL Storage Roots; that is, several logical or
+          physical volumes, or multiple "buckets" in an object store, each OCFL Storage Root MUST be independent.
+          For example, an institution may have a "newspapers" project that standardizes on OCFL 1.0, but then may have
+          a later "letters" project that wishes to use OCFL 1.2. These two projects would exist within two separate
+          OCFL Storage Roots.
+        </p>
+        <p>
+          The following example OCFL Storage Root represents the minimal set of files and folders:
+        </p>
+        <pre>
+[storage_root]
+    ├── 0=ocfl_1.0
+    └── ocfl_1.0.txt (optional)
+        </pre>
+    </section>
+
+    <section id="root-hierarchies">
+        <h2>Storage Hierarchies</h2>
     </section>
 
     <section id="root-extensions">
         <h2>Extensions</h2>
     </section>
+
 </section>
 
 <section id="examples" class="informative">
@@ -591,6 +639,28 @@ TBD
 
     <section id="example-moab-in-ocfl">
         <h2>Moab in an OCFL Object</h2>
+        <p>
+            [[Moab]] is an archive information package format developed and used by Stanford University.
+            Many of the ideas in Moab have been refined by OLFL, and OCFL is designed to
+            give institutions currently using Moab an easy path to adoption.
+        </p>
+        <p>
+            Converting content preserved in a Moab object in a way that does not compromise existing Moab
+            access patterns whilst allowing for the eventual use of OCFL-native workflows requires a Moab to
+            OCFL conversion tool. This tool uses the Moab-versioning gem to extract deltas and digests
+            of the Moab data directory for each Moab version and translate those into version state blocks
+            in an OCFL inventory file, which would be placed in the root directory of the Moab object.
+            All extant files in the Moab version directories are tracked in the manifest block. The contents
+            of the Moab manifests directory are not tracked in the version state blocks; they are effectively
+            deleted from the OCFL object without compromising legacy access patterns.
+        </p>
+        <p>
+            During the transitionary period the OCFL inventory file exists only in the root of the Moab object.
+            Once OCFL-native object creation workflows have been completed, future versions of that object will
+            be fully OCFL compliant - new versions will no longer have a manifests directory and will contain an
+            OCFL inventory file. At this stage OCFL tools will be able to access all versions of the content
+            originally preserved by Moab.
+        </p>
     </section>
 </section>
 
